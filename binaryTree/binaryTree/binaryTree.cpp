@@ -1,5 +1,6 @@
 #include <iostream>
 #include <queue>
+#include <vector>
 using namespace std;
 
 template<class Entry>
@@ -39,6 +40,11 @@ class Binary_tree {
 	Binary_node<Entry>* recursive_copy(Binary_node<Entry>* sub_root);
 	void recursive_clear(Binary_node<Entry>* &sub_root);
 	void recursive_deleteleaf(Binary_node<Entry>* &sub_root);
+	bool search_and_destroy(Binary_node<Entry>* &sub_root, const Entry& target);
+	bool remove_root(Binary_node<Entry>* &sub_root);
+	void recursive_create(Binary_node<Entry>* &sub_root, vector<Entry> &preorder, vector<Entry> &inorder);
+	int recursive_two_degree_count(Binary_node<Entry>* sub_root);
+	int recursive_count_leaf(Binary_node<Entry>* sub_root);
 public:
 	Binary_tree();
 	bool empty()const;
@@ -48,11 +54,15 @@ public:
 	void preorder(void(*visit)(Entry &));
 	void postorder(void(*visit)(Entry &));
 	// 常用的方法
+	void create_by_preorder_and_inorder();
 	int size()const;
 	int height()const;
 	Binary_tree<Entry> copy();
 	void clear();
 	void deleteleaf();
+	bool remove(const Entry& target);
+	int two_degree_count();
+	int count_leaf();
 	// 广度优先遍历又称层次遍历，需要借助队列实现
 	void breadthfirst(void(*visit)(Entry &));
 protected:
@@ -231,28 +241,167 @@ void Binary_tree<Entry>::breadthfirst(void(*visit)(Entry &)) {
 	}
 }
 
+template<class Entry>
+bool Binary_tree<Entry>::remove(const Entry& target) {
+	return search_and_destroy(root, target);
+}
+
+template<class Entry>
+bool Binary_tree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const Entry& target) {
+	if (sub_root == NULL || sub_root->data == target)
+		return remove_root(sub_root);
+	else if (target < sub_root->data)
+		return search_and_destroy(sub_root->left, target);
+	else
+		return search_and_destroy(sub_root->right, target);
+}
+
+template<class Entry>
+bool Binary_tree<Entry>::remove_root(Binary_node<Entry>* &sub_root) {
+	if (sub_root == NULL)
+		return false;
+	Binary_node<Entry>* to_delete = sub_root;
+	// Remember node to delete at end.
+	if (sub_root->right == NULL)
+		sub_root = sub_root->left;
+	else if (sub_root->left == NULL)
+		sub_root = sub_root->right;
+	else { // Neither subtree is empty.
+		to_delete = sub_root->left;
+		// Move left to find predecessor（前驱).
+		Binary_node<Entry>* parent = sub_root; // parent of to_delete.
+		while (to_delete->right != NULL) {
+			// to_delete is not the predecessor.
+			parent = to_delete;
+			to_delete = to_delete->right;
+		}
+		sub_root->data = to_delete->data; // Move from to_delete to root
+		if (parent == sub_root)
+			sub_root->left = to_delete->left;
+		else
+			parent->right = to_delete->left;
+	}
+	delete to_delete; // Remove to_delete from tree.
+	return true;
+}
+
+template<class Entry>
+void Binary_tree<Entry>::create_by_preorder_and_inorder() {
+	int n;
+	Entry temp;
+	vector<Entry> preorder, inorder;                     // store the user input;
+	
+	cout << "Please enter an integer representing the size of tree:";
+	cin >> n;
+
+	cout << "Please enter a series of entries in preorder, separated by spaces:" << endl;
+	for (int i = 0; i < n; i++) {
+		cin >> temp;
+		preorder.push_back(temp);
+	}
+	cout << "Please enter a series of entries in inorder, separated by spaces:" << endl;
+	for (int i = 0; i < n; i++) {
+		cin >> temp;
+		inorder.push_back(temp);
+	}
+	recursive_create(root, preorder, inorder);
+	return;
+}
+
+
+template<class Entry>
+void Binary_tree<Entry>::recursive_create(Binary_node<Entry>* &sub_root, vector<Entry> &preorder, vector<Entry> &inorder) {
+	int len_pre = preorder.size(), len_in = inorder.size();
+	if (!len_in || !len_pre){
+		sub_root = NULL;
+		return;
+	}
+
+	sub_root = new Binary_node<Entry>(preorder[0]);
+	int in = 0;
+	while (preorder[0] != inorder[in])
+		in++;
+	preorder.erase(preorder.begin());
+
+	vector<Entry>::iterator it_in = inorder.begin();
+	vector<Entry> inorder_left, inorder_right;
+	if (in != 0) {
+		inorder_left = vector<Entry>(it_in, it_in + in);
+	}
+	if (in != len_in - 1) {
+		inorder_right = vector<Entry>(it_in + in + 1, inorder.end());
+	}
+	recursive_create(sub_root->left, preorder, inorder_left);
+	recursive_create(sub_root->right, preorder, inorder_right);
+	return;
+
+}
+
+
+template<class Entry>
+int Binary_tree<Entry>::two_degree_count() {
+	return recursive_two_degree_count(root);
+}
+
+template<class Entry>
+int Binary_tree<Entry>::recursive_two_degree_count(Binary_node<Entry>* sub_root) {
+	if (sub_root == NULL)
+		return 0;
+	else if (sub_root->left != NULL && sub_root->right != NULL) {
+		return 1;
+	}
+	else {
+		return recursive_two_degree_count(sub_root->left) + recursive_two_degree_count(sub_root->right);
+	}
+}
+
+template<class Entry>
+int Binary_tree<Entry>::count_leaf() {
+	return recursive_count_leaf(root);
+}
+
+template<class Entry>
+int Binary_tree<Entry>::recursive_count_leaf(Binary_node<Entry>* sub_root) {
+	if (sub_root == NULL)
+		return 0;
+	if (sub_root->left == NULL && sub_root->right == NULL) {
+		return 1;
+	}
+	return recursive_count_leaf(sub_root->left) + recursive_count_leaf(sub_root->right);
+}
 
 void print(int &x) {
 	cout << x << ' ';
 }
 
+void print(char &x) {
+	cout << x << ' ';
+}
+
+
 int main()
 {
 	Binary_tree<int> a, b;
-	a.insert(1);
-	a.insert(6);
-	a.insert(3);
-	a.insert(5);
-	a.insert(7);
-	a.insert(9);
-	a.insert(4);
-	a.insert(8);
 	a.insert(2);
-
-
+	a.insert(1);
+	a.insert(3);
+	//a.insert(6);
+	//a.insert(5);
+	//a.insert(7);
+	//a.insert(9);
+	//a.insert(4);
+	//a.insert(8);
 	cout << "inorder" << endl;
 	a.inorder(print);
 	cout << endl;
+
+	cout << "count_leaf" << endl;
+	cout << a.count_leaf();
+	cout << endl;
+
+	cout << "two_degree_count()" << endl;
+	cout << a.two_degree_count() << endl;
+
 
 	cout << "preorder" << endl;
 	a.preorder(print);
@@ -277,6 +426,14 @@ int main()
 
 	cout << "a.deleteleaf()" << endl;
 	a.deleteleaf();
+
+	cout << "inorder" << endl;
+	a.inorder(print);
+	cout << endl;
+
+	a.remove(1);
+	a.remove(7);
+	a.remove(6);
 
 	cout << "inorder" << endl;
 	a.inorder(print);
@@ -316,6 +473,37 @@ int main()
 		cout << "yes" << endl;
 	else
 		cout << "no" << endl;
+
+	//cout << "next is c" << endl;
+	//Binary_tree<char> c;
+	//c.create_by_preorder_and_inorder();
+
+	//cout << "inorder" << endl;
+	//c.inorder(print);
+	//cout << endl;
+
+	//cout << "preorder" << endl;
+	//c.preorder(print);
+	//cout << endl;
+
+	//cout << "postorder" << endl;
+	//c.postorder(print);
+	//cout << endl;
+
+	//cout << "breadthfirst" << endl;
+	//c.breadthfirst(print);
+	//cout << endl;
+
+	//cout << "size" << endl;
+	//cout << c.size() << endl;
+
+	//cout << "Is it empty?" << endl;
+	//if (c.empty())
+	//	cout << "yes" << endl;
+	//else
+	//	cout << "no" << endl;
+
+
 
 
 
