@@ -45,6 +45,10 @@ class Binary_tree {
 	void recursive_create(Binary_node<Entry>* &sub_root, vector<Entry> &preorder, vector<Entry> &inorder);
 	int recursive_two_degree_count(Binary_node<Entry>* sub_root);
 	int recursive_count_leaf(Binary_node<Entry>* sub_root);
+	int recursive_find_arrangement(Binary_node<Entry>* sub_root, const Entry& target);
+	bool recursive_is_binary_tree(Binary_node<Entry>* sub_root);
+	Entry maxValue(Binary_node<Entry>* sub_root);
+	Entry minValue(Binary_node<Entry>* sub_root);
 public:
 	Binary_tree();
 	bool empty()const;
@@ -63,8 +67,11 @@ public:
 	bool remove(const Entry& target);
 	int two_degree_count();
 	int count_leaf();
+	int breadth();
+	int find_arrangement(const Entry& target);
 	// 广度优先遍历又称层次遍历，需要借助队列实现
 	void breadthfirst(void(*visit)(Entry &));
+	bool is_binary_tree();
 protected:
 	Binary_node<Entry>* root;
 };
@@ -370,6 +377,76 @@ int Binary_tree<Entry>::recursive_count_leaf(Binary_node<Entry>* sub_root) {
 	return recursive_count_leaf(sub_root->left) + recursive_count_leaf(sub_root->right);
 }
 
+
+template<class Entry>
+int Binary_tree<Entry>::breadth() {
+	return count_leaf();
+}
+
+template<class Entry>
+int Binary_tree<Entry>::find_arrangement(const Entry& target) {
+	return recursive_find_arrangement(root, target);
+}
+
+template<class Entry>
+int Binary_tree<Entry>::recursive_find_arrangement(Binary_node<Entry>* sub_root, const Entry& target) {
+	if (sub_root == NULL)
+		return 0;
+	if (sub_root->data == target)
+		return 1;
+	int i = recursive_find_arrangement(sub_root->left, target);
+	int j = recursive_find_arrangement(sub_root->right, target);
+	if (i != 0)
+		return i + 1;
+	else if (j != 0)
+		return j + 1;
+	else
+		return 0;
+		
+}
+
+
+template<class Entry>
+bool Binary_tree<Entry>::is_binary_tree() {
+	return recursive_is_binary_tree(root);
+}
+
+template<class Entry>
+bool Binary_tree<Entry>::recursive_is_binary_tree(Binary_node<Entry>* sub_root) {
+	if (root == NULL)
+		return true;
+	//如果左子树最大值大于根节点，则返回false
+	if (sub_root->left != NULL && maxValue(sub_root->left) > root->value)
+		return false;
+	//如果右子树最小值小于根节点，则返回false
+	if (sub_root->right != NULL && minValue(sub_root->right) < root->value)
+		return false;
+
+	//递归判断
+	if (!recursive_is_binary_tree(sub_root->left) || !recursive_is_binary_tree(sub_root->right))
+		return false;
+	return true;
+}
+
+template<class Entry>
+Entry Binary_tree<Entry>::maxValue(Binary_node<Entry>* sub_root) {
+	Entry temp;
+	if (sub_root == NULL)
+		return temp;
+		while (sub_root->right)
+			sub_root = sub_root->right;
+	return sub_root->data;
+}
+
+template<class Entry>
+Entry Binary_tree<Entry>::minValue(Binary_node<Entry>* sub_root) {
+	Entry temp;
+	if (sub_root == NULL)
+		return temp;
+		while (sub_root->left)
+			sub_root = sub_root->left;
+	return sub_root->data;
+}
 void print(int &x) {
 	cout << x << ' ';
 }
@@ -385,7 +462,7 @@ int main()
 	a.insert(2);
 	a.insert(1);
 	a.insert(3);
-	//a.insert(6);
+	a.insert(6);
 	//a.insert(5);
 	//a.insert(7);
 	//a.insert(9);
@@ -402,6 +479,8 @@ int main()
 	cout << "two_degree_count()" << endl;
 	cout << a.two_degree_count() << endl;
 
+	cout << "find_arrangement()" << endl;
+	cout << a.find_arrangement(6) << endl;
 
 	cout << "preorder" << endl;
 	a.preorder(print);
