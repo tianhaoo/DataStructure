@@ -89,11 +89,13 @@ bool Binary_tree<Entry>::empty()const {
 
 template <class Entry>
 bool Binary_tree<Entry>::insert(const Entry &new_data) {
+	// 这里的insert在插入的同时按照大小顺序排列好，小的放在左边， 大的放在右边
 	return search_and_insert(root, new_data);
 }
 
 template <class Entry>
 bool Binary_tree<Entry>::search_and_insert(Binary_node<Entry>* &sub_root, const Entry &new_data) {
+	// 递归的边界
 	if (sub_root == NULL) {
 		sub_root = new Binary_node<Entry>(new_data);
 		return true;
@@ -106,6 +108,7 @@ bool Binary_tree<Entry>::search_and_insert(Binary_node<Entry>* &sub_root, const 
 		return search_and_insert(sub_root->right, new_data);
 	}
 	else {
+		// false代表插入不成功
 		return false;
 	}
 }
@@ -117,9 +120,12 @@ void Binary_tree<Entry>::inorder(void (*visit)(Entry &)) {
 
 template <class Entry>
 void Binary_tree<Entry>::recursive_inorder(Binary_node<Entry>* sub_root, void (*visit)(Entry &)) {
+	// 传进来的第二个参数是一个函数指针。名为visit,返回值为void,接受一个Entry类型的参数。这样写好处是保证了高度的OO特性，值得学习。
+	//递归边界
 	if (sub_root != NULL) {
+		// 三种遍历只是下面三条语句的顺序不一样
 		recursive_inorder(sub_root->left, visit);
-		(*visit)(sub_root->data);
+		(*visit)(sub_root->data);       // 此处代表调用传进来的函数。
 		recursive_inorder(sub_root->right, visit);
 	}
 }
@@ -159,8 +165,10 @@ int Binary_tree<Entry>::size()const {
 
 template<class Entry>
 int Binary_tree<Entry>::recursive_size(Binary_node<Entry>* sub_root)const {
+	// 递归的边界
 	if (sub_root == NULL)
 		return 0;
+	// 经典的递归
 	return 1 + recursive_size(sub_root->left) + recursive_size(sub_root->right);
 }
 
@@ -171,10 +179,13 @@ int Binary_tree<Entry>::height()const {
 
 template<class Entry>
 int Binary_tree<Entry>::recursive_height(Binary_node<Entry>* sub_root)const {
+	// 递归边界
 	if (sub_root == NULL)
 		return 0;
+	// 递归求最大的子树的高度
 	int left = recursive_height(sub_root->left);
 	int right = recursive_height(sub_root->right);
+	// 只要大的
 	if (left > right)
 		return 1 + left;
 	else
@@ -188,13 +199,16 @@ Binary_tree<Entry> Binary_tree<Entry>::copy() {
 	return temp;
 }
 
-template<class Entry>
+template<class Entry >
 Binary_node<Entry>* Binary_tree<Entry>::recursive_copy(Binary_node<Entry>* sub_root) {
+	// 递归边界
 	if (sub_root == NULL)
 		return NULL;
+	// 深拷贝
 	Binary_node<Entry>* temp = new Binary_node<Entry>(sub_root->data);
 	temp->left = recursive_copy(sub_root->left);
 	temp->right = recursive_copy(sub_root->right);
+
 	return temp;
 }
 
@@ -206,8 +220,10 @@ void Binary_tree<Entry>::clear() {
 template<class Entry>
 void Binary_tree<Entry>::recursive_clear(Binary_node<Entry>* &sub_root) {
 	if (sub_root != NULL) {
+		// 递归调用
 		recursive_clear(sub_root->left);
 		recursive_clear(sub_root->right);
+		// 删除
 		delete sub_root;
 		sub_root = NULL;
 	}
@@ -220,23 +236,31 @@ void Binary_tree<Entry>::deleteleaf() {
 
 template<class Entry>
 void Binary_tree<Entry>::recursive_deleteleaf(Binary_node<Entry>* &sub_root) {
+	// 递归边界
 	if (sub_root == NULL)
 		return;
+	// 每一次递归要做的事情
 	if (sub_root->left == NULL && sub_root->right == NULL) {
 		delete sub_root;
 		sub_root = NULL;
 		return;
 	}
+	// 递归调用
 	recursive_deleteleaf(sub_root->left);
 	recursive_deleteleaf(sub_root->right);
 }
 
 template<class Entry>
 void Binary_tree<Entry>::breadthfirst(void(*visit)(Entry &)) {
+	// 用一个队列作为辅助
+	// 先把根节点入队
 	queue<Binary_node<Entry>*> temp;
 	temp.push(root);
+
 	while (!temp.empty()) {
+		// 新建一个临时指针指向队首元素，即为即将出队和访问的元素
 		Binary_node<Entry>* p = temp.front();
+		// 用指针抓住后就可以出队了，当然也可以在循环体末尾进行出队
 		temp.pop();
 		(*visit)(p->data);
 		if (p->left != NULL) {
@@ -255,6 +279,7 @@ bool Binary_tree<Entry>::remove(const Entry& target) {
 
 template<class Entry>
 bool Binary_tree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const Entry& target) {
+
 	if (sub_root == NULL || sub_root->data == target)
 		return remove_root(sub_root);
 	else if (target < sub_root->data)
@@ -262,9 +287,19 @@ bool Binary_tree<Entry>::search_and_destroy(Binary_node<Entry>* &sub_root, const
 	else
 		return search_and_destroy(sub_root->right, target);
 }
-
+/*
+如何删除树的节点？
+1. 被删除的节点是叶子节点
+直接将其双亲节点的相应指针域置为空
+2. 被删除的节点只有一个左子节点或者右子节点
+将其双亲节点的相应指针域的值改为被删除节点相应的的左子树或右子树
+3. 被删除的节点有两个子节点
+以其前驱结点替代之，然后再删除该前驱结点
+（意思是先将前驱结点的数据赋值给待删除节点，待删除节点的前驱结点一定是个叶子节点，容易删除。）
+*/
 template<class Entry>
 bool Binary_tree<Entry>::remove_root(Binary_node<Entry>* &sub_root) {
+	// 如果是空，返回false代表没找到
 	if (sub_root == NULL)
 		return false;
 	Binary_node<Entry>* to_delete = sub_root;
@@ -274,6 +309,7 @@ bool Binary_tree<Entry>::remove_root(Binary_node<Entry>* &sub_root) {
 	else if (sub_root->left == NULL)
 		sub_root = sub_root->right;
 	else { // Neither subtree is empty.
+		// 一个节点的左子节点的最右子节点是这个节点的前驱结点
 		to_delete = sub_root->left;
 		// Move left to find predecessor（前驱).
 		Binary_node<Entry>* parent = sub_root; // parent of to_delete.
@@ -319,25 +355,33 @@ void Binary_tree<Entry>::create_by_preorder_and_inorder() {
 template<class Entry>
 void Binary_tree<Entry>::recursive_create(Binary_node<Entry>* &sub_root, vector<Entry> &preorder, vector<Entry> &inorder) {
 	int len_pre = preorder.size(), len_in = inorder.size();
+	// 递归边界
 	if (!len_in || !len_pre){
 		sub_root = NULL;
 		return;
 	}
 
+	// 先序序列的首元素一定是根节点
 	sub_root = new Binary_node<Entry>(preorder[0]);
 	int in = 0;
+	// 找到根节点在中序序列中的下标
 	while (preorder[0] != inorder[in])
 		in++;
+	// 复制后便可以删除首元素
 	preorder.erase(preorder.begin());
 
+	// 迭代器
 	vector<Entry>::iterator it_in = inorder.begin();
+	// 两个临时向量，存放将inorder拆分后的两个序列
 	vector<Entry> inorder_left, inorder_right;
+	// 按照之前找到的根节点的下标将序列拆分并赋值
 	if (in != 0) {
-		inorder_left = vector<Entry>(it_in, it_in + in);
+		inorder_left = vector<Entry>(it_in, it_in + in);   // vector的构造函数，it_in存的是inorder的首元素的下标
 	}
 	if (in != len_in - 1) {
 		inorder_right = vector<Entry>(it_in + in + 1, inorder.end());
 	}
+	// 递归调用
 	recursive_create(sub_root->left, preorder, inorder_left);
 	recursive_create(sub_root->right, preorder, inorder_right);
 	return;
@@ -352,11 +396,14 @@ int Binary_tree<Entry>::two_degree_count() {
 
 template<class Entry>
 int Binary_tree<Entry>::recursive_two_degree_count(Binary_node<Entry>* sub_root) {
+	// 递归边界
 	if (sub_root == NULL)
 		return 0;
+	// 递归执行主体
 	else if (sub_root->left != NULL && sub_root->right != NULL) {
 		return 1;
 	}
+	// 递归调用
 	else {
 		return recursive_two_degree_count(sub_root->left) + recursive_two_degree_count(sub_root->right);
 	}
