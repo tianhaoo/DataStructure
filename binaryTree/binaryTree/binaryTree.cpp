@@ -413,13 +413,13 @@ bool Binary_tree<Entry>::is_binary_tree() {
 
 template<class Entry>
 bool Binary_tree<Entry>::recursive_is_binary_tree(Binary_node<Entry>* sub_root) {
-	if (root == NULL)
+	if (sub_root == NULL)
 		return true;
 	//如果左子树最大值大于根节点，则返回false
-	if (sub_root->left != NULL && maxValue(sub_root->left) > root->value)
+	if (sub_root->left != NULL && maxValue(sub_root->left) > sub_root->data)
 		return false;
 	//如果右子树最小值小于根节点，则返回false
-	if (sub_root->right != NULL && minValue(sub_root->right) < root->value)
+	if (sub_root->right != NULL && minValue(sub_root->right) < sub_root->data)
 		return false;
 
 	//递归判断
@@ -430,9 +430,6 @@ bool Binary_tree<Entry>::recursive_is_binary_tree(Binary_node<Entry>* sub_root) 
 
 template<class Entry>
 Entry Binary_tree<Entry>::maxValue(Binary_node<Entry>* sub_root) {
-	Entry temp;
-	if (sub_root == NULL)
-		return temp;
 		while (sub_root->right)
 			sub_root = sub_root->right;
 	return sub_root->data;
@@ -440,9 +437,6 @@ Entry Binary_tree<Entry>::maxValue(Binary_node<Entry>* sub_root) {
 
 template<class Entry>
 Entry Binary_tree<Entry>::minValue(Binary_node<Entry>* sub_root) {
-	Entry temp;
-	if (sub_root == NULL)
-		return temp;
 		while (sub_root->left)
 			sub_root = sub_root->left;
 	return sub_root->data;
@@ -458,133 +452,25 @@ void print(char &x) {
 
 int main()
 {
-	Binary_tree<int> a, b;
-	a.insert(2);
-	a.insert(1);
-	a.insert(3);
-	a.insert(6);
-	//a.insert(5);
-	//a.insert(7);
-	//a.insert(9);
-	//a.insert(4);
-	//a.insert(8);
-	cout << "inorder" << endl;
-	a.inorder(print);
-	cout << endl;
+	Binary_tree<int> a;
 
-	cout << "count_leaf" << endl;
-	cout << a.count_leaf();
-	cout << endl;
+	cout << "根据先序遍历序列中序遍历序列创建树" << endl;
+	a.create_by_preorder_and_inorder();
 
-	cout << "two_degree_count()" << endl;
+	cout << "统计度为2的结点数" << endl;
 	cout << a.two_degree_count() << endl;
 
-	cout << "find_arrangement()" << endl;
-	cout << a.find_arrangement(6) << endl;
+	cout << "统计二叉树的宽度" << endl;
+	cout << a.breadth() << endl;
 
-	cout << "preorder" << endl;
-	a.preorder(print);
-	cout << endl;
+	cout << "计算二叉树中指定结点p所在层次" << endl;
+	cout << a.find_arrangement(1) << endl;
 
-	cout << "postorder" << endl;
-	a.postorder(print);
-	cout << endl;
-
-	cout << "breadthfirst" << endl;
-	a.breadthfirst(print);
-	cout << endl;
-
-	cout << "size" << endl;
-	cout << a.size() << endl;
-
-	cout << "Is it empty?" << endl;
-	if (a.empty())
-		cout << "yes" << endl;
+	cout << "判断当前二叉树是否为二叉查找树" << endl;
+	if (a.is_binary_tree())
+		cout << "是二叉查找树" << endl;
 	else
-		cout << "no" << endl;
-
-	cout << "a.deleteleaf()" << endl;
-	a.deleteleaf();
-
-	cout << "inorder" << endl;
-	a.inorder(print);
-	cout << endl;
-
-	a.remove(1);
-	a.remove(7);
-	a.remove(6);
-
-	cout << "inorder" << endl;
-	a.inorder(print);
-	cout << endl;
-
-
-	cout << endl;
-
-	b = a.copy();
-
-	cout << "next is b:" << endl;
-	b.insert(100);
-	b.insert(500);
-	b.insert(-1);
-	b.insert(0);
-	b.insert(-5);
-
-	cout << "inorder" << endl;
-	b.inorder(print);
-	cout << endl;
-
-	cout << "size" << endl;
-	cout << b.size() << endl;
-
-	cout << "b.clear()" << endl;
-	b.clear();
-
-	cout << "inorder" << endl;
-	b.inorder(print);
-	cout << endl;
-
-	cout << "size" << endl;
-	cout << b.size() << endl;
-
-	cout << "Is it empty?" << endl;
-	if (b.empty())
-		cout << "yes" << endl;
-	else
-		cout << "no" << endl;
-
-	//cout << "next is c" << endl;
-	//Binary_tree<char> c;
-	//c.create_by_preorder_and_inorder();
-
-	//cout << "inorder" << endl;
-	//c.inorder(print);
-	//cout << endl;
-
-	//cout << "preorder" << endl;
-	//c.preorder(print);
-	//cout << endl;
-
-	//cout << "postorder" << endl;
-	//c.postorder(print);
-	//cout << endl;
-
-	//cout << "breadthfirst" << endl;
-	//c.breadthfirst(print);
-	//cout << endl;
-
-	//cout << "size" << endl;
-	//cout << c.size() << endl;
-
-	//cout << "Is it empty?" << endl;
-	//if (c.empty())
-	//	cout << "yes" << endl;
-	//else
-	//	cout << "no" << endl;
-
-
-
-
+		cout << "不是二叉查找树" << endl;
 
 
 	system("pause");
