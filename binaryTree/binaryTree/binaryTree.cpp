@@ -462,14 +462,14 @@ template<class Entry>
 bool Binary_tree<Entry>::recursive_is_binary_tree(Binary_node<Entry>* sub_root) {
 	if (sub_root == NULL)
 		return true;
-	//如果左子树最大值大于根节点，则返回false
+	// 如果左子树最大值大于根节点，则返回false
 	if (sub_root->left != NULL && maxValue(sub_root->left) > sub_root->data)
 		return false;
-	//如果右子树最小值小于根节点，则返回false
+	// 如果右子树最小值小于根节点，则返回false
 	if (sub_root->right != NULL && minValue(sub_root->right) < sub_root->data)
 		return false;
 
-	//递归判断
+	// 递归判断
 	if (!recursive_is_binary_tree(sub_root->left) || !recursive_is_binary_tree(sub_root->right))
 		return false;
 	return true;
@@ -488,6 +488,7 @@ Entry Binary_tree<Entry>::minValue(Binary_node<Entry>* sub_root) {
 			sub_root = sub_root->left;
 	return sub_root->data;
 }
+
 void print(int &x) {
 	cout << x << ' ';
 }
@@ -511,7 +512,7 @@ int main()
 	cout << a.breadth() << endl;
 
 	cout << "计算二叉树中指定结点p所在层次" << endl;
-	cout << a.find_arrangement(1) << endl;
+	cout << a.find_arrangement(20) << endl;
 
 	cout << "判断当前二叉树是否为二叉查找树" << endl;
 	if (a.is_binary_tree())
