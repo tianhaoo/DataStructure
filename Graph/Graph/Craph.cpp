@@ -8,26 +8,24 @@ using namespace std;
 typedef int Vertex;
 template <int max_size>
 class Digraph {
-	int count;
-	Vertex visited[max_size];   // 用来存储所有访问过的节点
 	list<Vertex> neighbors[max_size];      // 一共有max_size个链表每一个链表用来储存与他相连的所有Vertex
-	void traverse(Vertex v, bool visited[], void(*visit)(Vertex&))const;
+	void traverse(Vertex v, bool visited[], void(*visit)(Vertex&));
+	void traverse(Vertex v, bool visited[]);
 public:
-	Digraph();
-	void depth_first(void(*visit)(Vertex&))const;
-	void breadth_first(void(*visit)(Vertex&))const;
+	list<Vertex>* fetch_neighbors();
+	void depth_first(void(*visit)(Vertex&));
+	void breadth_first(void(*visit)(Vertex&));
 	void create();
+	vector<Digraph<max_size>> connected_subgraph();
 };
 
 template<int max_size>
-Digraph<max_size>::Digraph() {
-	for (Vertex v = 0; v < max_size; v++)
-		visited[v] = false;
+list<Vertex>* Digraph<max_size>::fetch_neighbors() {
+	return neighbors;
 }
 
-
 template <int max_size>
-void Digraph<max_size>::depth_first(void(*visit)(Vertex&))const {
+void Digraph<max_size>::depth_first(void(*visit)(Vertex&)) {     // 深度优先遍历的主调函数
 	bool visited[max_size];
 	for (int v = 0; v < max_size; v++) 
 		visited[v] = false;
@@ -38,7 +36,7 @@ void Digraph<max_size>::depth_first(void(*visit)(Vertex&))const {
 }
 
 template <int max_size>
-void Digraph<max_size>::traverse(Vertex v, bool visited[], void(*visit)(Vertex&))const {
+void Digraph<max_size>::traverse(Vertex v, bool visited[], void(*visit)(Vertex&)) {   // 深度优先遍历的递归函数
 	visited[v] = true;
 	(*visit)(v);
 	Vertex w;
@@ -48,14 +46,13 @@ void Digraph<max_size>::traverse(Vertex v, bool visited[], void(*visit)(Vertex&)
 		if (!visited[w])
 			traverse(w, visited, visit);
 	}
-
 }
 
 template<int max_size>
-void Digraph<max_size>::breadth_first(void(*visit)(Vertex&))const {
+void Digraph<max_size>::breadth_first(void(*visit)(Vertex&)) {               // 广度优先遍历
 	queue<Vertex> q;
 	bool visited[max_size];
-	Vertex v, w, x;
+	Vertex v, w;
 	for (v = 0; v < max_size; v++)
 		visited[v] = false;
 	for (v = 0; v < max_size; v++) {
@@ -66,7 +63,8 @@ void Digraph<max_size>::breadth_first(void(*visit)(Vertex&))const {
 				if (!visited[w]) {
 					visited[w] = true;
 					(*visit)(w);
-					for (list<Vertex>::iterator it = neighbors[w].begin(); it != neighbors[w].end(); it++)
+					list<Vertex>::iterator it;
+					for (it = (neighbors[w]).begin(); it != (neighbors[w]).end(); it++)
 						q.push(*it);
 				}
 				q.pop();
@@ -76,9 +74,9 @@ void Digraph<max_size>::breadth_first(void(*visit)(Vertex&))const {
 }
 
 template<int max_size>
-void Digraph<max_size>::create() {
+void Digraph<max_size>::create() {                   // 根据用户输入创建图
 	cout << "默认所有节点都是从0到"
-		 << max_size
+		 << max_size-1
 		 << "的编号" 
 		 << endl;
 
@@ -94,19 +92,73 @@ void Digraph<max_size>::create() {
 		neighbors[v1].push_back(v2);
 	}
 }
+
+template<int max_size>
+vector<Digraph<max_size>> Digraph<max_size>::connected_subgraph() {    // 求连通子图的主调函数，返回图的连通子图组成的向量
+	vector<Digraph<max_size>> temp_vec;
+
+
+	bool visited[max_size], passed[max_size];
+	for (int i = 0; i < max_size; i++) {
+		visited[i] = false;
+		passed[i] = false;
+	}
+		
+	for (int v = 0; v < max_size; v++) {
+		Digraph<max_size> temp_digraph;
+		if (!visited[v])
+			traverse(v, visited);
+
+		for (int i = 0; i < max_size; i++) {
+			if (visited[i] && !passed[i]) {
+				temp_digraph.fetch_neighbors()[i] = neighbors[i];
+				passed[i] = true;
+			}		
+		}
+		temp_vec.push_back(temp_digraph);
+	}
+
+	return temp_vec;
+}
+
+template<int max_size>
+void Digraph<max_size>::traverse(Vertex v, bool visited[]) {      // 求连通子图的递归函数
+	visited[v] = true;
+	Vertex w;
+	list<Vertex>::iterator it;
+	for (it = neighbors[v].begin(); it != neighbors[v].end(); it++) {
+		w = *it;
+		if (!visited[w])
+			traverse(w, visited);
+	}
+}
+
+
 void print(Vertex& x) {
 	cout << x << ' ';
 }
 
+
 int main()
 {
-	Digraph<5> a;
+	const int size = 7;
+	Digraph<size> a;
+	vector<Digraph<size>> vec_subdigraph;
+
 	a.create();
 
-	a.depth_first(print);
+	a.breadth_first(print);
+	cout << endl;
 
+	a.breadth_first(print);
+	cout << endl;
 
+	vec_subdigraph = a.connected_subgraph();
 
+	for (int i = 0; i < vec_subdigraph.size(); i++) {
+		(vec_subdigraph[i]).breadth_first(print);
+		cout << endl;
+	}
 
 	system("pause");
 	return 0;
