@@ -162,22 +162,26 @@ int main()
 	vector<Digraph<size>> vec_subdigraph;
 
 	a.create();
-
+	
+	cout << "从默认位置开始的广度优先遍历" << endl;
 	a.breadth_first(print); // 不选定起点默认是从零开始遍历
 	cout << endl;
 
+	cout << "从3开始的深度优先遍历" << endl;
 	a.breadth_first(print, 3); 
 	cout << endl;
 
-	a.breadth_first(print); // 不选定起点默认是从零开始遍历
+	cout << "从默认位置开始的深度优先遍历" << endl;
+	a.depth_first(print); // 不选定起点默认是从零开始遍历
 	cout << endl;
 
-	a.breadth_first(print, 3); 
+	cout << "从3开始的深度优先遍历" << endl;
+	a.depth_first(print, 3); 
 	cout << endl;
 
 	vec_subdigraph = a.connected_subgraph();
 
-	cout << "下面输出a的连通子图" << endl;
+	cout << "下面输出a的连通子图, 一个图占用一行，有的图没有节点，仅仅输出一个换行" << endl;
 	for (int i = 0; i < vec_subdigraph.size(); i++) {
 		vec_subdigraph[i].breadth_first(print);
 		cout << endl;
