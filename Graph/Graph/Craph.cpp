@@ -9,15 +9,26 @@ typedef int Vertex;
 template <int max_size>
 class Digraph {
 	list<Vertex> neighbors[max_size];      // 一共有max_size个链表每一个链表用来储存与他相连的所有Vertex
+	
 	void traverse(Vertex v, bool visited[], void(*visit)(Vertex&));
 	void traverse(Vertex v, bool visited[]);
 public:
+	bool disabled[max_size];
+	Digraph();
 	list<Vertex>* fetch_neighbors();
-	void depth_first(void(*visit)(Vertex&));
-	void breadth_first(void(*visit)(Vertex&));
+	void depth_first(void(*visit)(Vertex&), Vertex start=0);
+	void breadth_first(void(*visit)(Vertex&), Vertex start=0);
 	void create();
 	vector<Digraph<max_size>> connected_subgraph();
 };
+
+template<int max_size>
+Digraph<max_size>::Digraph()
+{
+	for (int i = 0; i < max_size; i++)
+		disabled[i] = false;
+}
+
 
 template<int max_size>
 list<Vertex>* Digraph<max_size>::fetch_neighbors() {
@@ -25,11 +36,11 @@ list<Vertex>* Digraph<max_size>::fetch_neighbors() {
 }
 
 template <int max_size>
-void Digraph<max_size>::depth_first(void(*visit)(Vertex&)) {     // 深度优先遍历的主调函数
+void Digraph<max_size>::depth_first(void(*visit)(Vertex&), Vertex start) {     // 深度优先遍历的主调函数
 	bool visited[max_size];
 	for (int v = 0; v < max_size; v++) 
 		visited[v] = false;
-	for (int v = 0; v < max_size; v++) {
+	for (int v = start; v < max_size; v++) {
 		if (!visited[v])
 			traverse(v, visited, visit); 
 	}
@@ -38,7 +49,8 @@ void Digraph<max_size>::depth_first(void(*visit)(Vertex&)) {     // 深度优先遍历
 template <int max_size>
 void Digraph<max_size>::traverse(Vertex v, bool visited[], void(*visit)(Vertex&)) {   // 深度优先遍历的递归函数
 	visited[v] = true;
-	(*visit)(v);
+	if(!disabled[v])
+		(*visit)(v);
 	Vertex w;
 	list<Vertex>::iterator it;
 	for (it = neighbors[v].begin(); it != neighbors[v].end(); it++) {
@@ -49,20 +61,21 @@ void Digraph<max_size>::traverse(Vertex v, bool visited[], void(*visit)(Vertex&)
 }
 
 template<int max_size>
-void Digraph<max_size>::breadth_first(void(*visit)(Vertex&)) {               // 广度优先遍历
+void Digraph<max_size>::breadth_first(void(*visit)(Vertex&), Vertex start) {               // 广度优先遍历
 	queue<Vertex> q;
 	bool visited[max_size];
 	Vertex v, w;
 	for (v = 0; v < max_size; v++)
 		visited[v] = false;
-	for (v = 0; v < max_size; v++) {
+	for (v = start; v < max_size; v++) {
 		if (!visited[v]) {
 			q.push(v);
 			while (!q.empty()) {
 				w = q.front();
 				if (!visited[w]) {
 					visited[w] = true;
-					(*visit)(w);
+					if(!disabled[w])
+						(*visit)(w);
 					list<Vertex>::iterator it;
 					for (it = (neighbors[w]).begin(); it != (neighbors[w]).end(); it++)
 						q.push(*it);
@@ -113,7 +126,10 @@ vector<Digraph<max_size>> Digraph<max_size>::connected_subgraph() {    // 求连通
 			if (visited[i] && !passed[i]) {
 				temp_digraph.fetch_neighbors()[i] = neighbors[i];
 				passed[i] = true;
-			}		
+			}
+			else {
+				temp_digraph.disabled[i] = true;
+			}
 		}
 		temp_vec.push_back(temp_digraph);
 	}
@@ -147,16 +163,22 @@ int main()
 
 	a.create();
 
-	a.breadth_first(print);
+	a.breadth_first(print); // 不选定起点默认是从零开始遍历
 	cout << endl;
 
-	a.breadth_first(print);
+	a.breadth_first(print, 3); 
+	cout << endl;
+
+	a.breadth_first(print); // 不选定起点默认是从零开始遍历
+	cout << endl;
+
+	a.breadth_first(print, 3); 
 	cout << endl;
 
 	vec_subdigraph = a.connected_subgraph();
 
 	for (int i = 0; i < vec_subdigraph.size(); i++) {
-		(vec_subdigraph[i]).breadth_first(print);
+		vec_subdigraph[i].breadth_first(print);
 		cout << endl;
 	}
 
