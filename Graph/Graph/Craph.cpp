@@ -177,6 +177,7 @@ int main()
 
 	vec_subdigraph = a.connected_subgraph();
 
+	cout << "下面输出a的连通子图" << endl;
 	for (int i = 0; i < vec_subdigraph.size(); i++) {
 		vec_subdigraph[i].breadth_first(print);
 		cout << endl;
